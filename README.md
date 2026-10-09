@@ -41,6 +41,7 @@ icdu -d1 -h ~/Library
 icdu -a ~/Downloads | sort -n | tail
 ```
 
+Like `du`, `-h` and `--si` print the decimal separator of your locale (`4,1M` with a Turkish or German `LC_NUMERIC`).
 Options follow macOS `du(1)`: `-A -a -B -c -d -g -H -h -I -k -L -l -m -n -P -r -s -t -x --si` and the
 `BLOCKSIZE` environment variable. `icdu --help` lists them.
 

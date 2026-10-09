@@ -1,3 +1,4 @@
+import { decimalPoint } from "./format";
 import { fnmatch } from "./glob";
 
 export type Unit = "blocks" | "k" | "m" | "g" | "human" | "si";
@@ -24,6 +25,8 @@ export interface Options {
   nodump: boolean;
   /** -I: ignore entries whose name matches. */
   ignore: Array<(name: string) => boolean>;
+  /** Decimal separator for -h / --si, from the locale like du. */
+  decimalPoint: string;
   /** --local: count only what is stored on this Mac, exactly like du (evicted iCloud files count as nothing). */
   local: boolean;
   /** --plain: no live table, no progress display; just du-style output. */
@@ -56,6 +59,7 @@ export function parseArgs(argv: string[], env: NodeJS.ProcessEnv = process.env):
     xdev: false,
     nodump: false,
     ignore: [],
+    decimalPoint: ".",
     local: enabled(env.ICDU_LOCAL),
     plain: enabled(env.ICDU_PLAIN) || enabled(env.CI),
   };
@@ -125,6 +129,7 @@ export function parseArgs(argv: string[], env: NodeJS.ProcessEnv = process.env):
     }
   }
   if ([options.all, sFlag, dFlag].filter(Boolean).length > 1) return { kind: "usage" };
+  if (options.unit === "human" || options.unit === "si") options.decimalPoint = decimalPoint(env);
   if (bytesPerBlock !== undefined) {
     options.blockSize = options.apparent ? bytesPerBlock : Math.ceil(bytesPerBlock / 512) * 512;
   }

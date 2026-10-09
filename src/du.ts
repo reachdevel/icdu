@@ -191,8 +191,8 @@ export async function du(paths: string[], options: Options, io: IO, live?: Live)
   const fmt = (blocks: number): string => {
     const bytes = blocks * BLOCK;
     switch (options.unit) {
-      case "human": return humanize(bytes);
-      case "si": return humanize(bytes, true);
+      case "human": return humanize(bytes, false, options.decimalPoint);
+      case "si": return humanize(bytes, true, options.decimalPoint);
       case "blocks": return String(Math.ceil(bytes / options.displayBlock));
       default: return String(Math.ceil(bytes / UNIT_BYTES[options.unit]));
     }

@@ -12,6 +12,7 @@ First release.
 - `icdu`, a `du` for macOS that counts files evicted to iCloud ("dataless" files) as if they were stored locally.
 - The options of macOS `du(1)`: `-A -a -B -c -d -g -H -h -I -k -L -l -m -n -P -r -s -t -x --si` and the `BLOCKSIZE` environment variable,
   with output, ordering, hard-link handling and exit codes checked against `/usr/bin/du`.
+- `-h` / `--si` use the locale's decimal separator like `du` (`4,1M` under tr_TR or de_DE).
 - `--local` (or `ICDU_LOCAL=1`): count only what is stored on this Mac, exactly like `du`.
 - `--plain` (or `ICDU_PLAIN=1`, or `CI` being set): no live table and no progress display.
 - Parallel directory scan (16 concurrent filesystem calls).

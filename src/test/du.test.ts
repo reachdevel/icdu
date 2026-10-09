@@ -191,6 +191,10 @@ const ENV_CASES: Array<[Record<string, string>, string[]]> = [
   [{ BLOCKSIZE: "" }, ["-s", "d"]],
   [{ BLOCKSIZE: "4096" }, ["-k", "-s", "d"]],
   [{ BLOCKSIZE: "4096" }, ["-h", "-s", "d"]],
+  [{ LC_ALL: "tr_TR.UTF-8" }, ["-sh", "d", "top"]],
+  [{ LC_ALL: "de_DE.UTF-8" }, ["--si", "-c", "d", "top"]],
+  [{ LANG: "fr_FR.UTF-8" }, ["-ah", "d"]],
+  [{ LC_ALL: "C", LANG: "tr_TR.UTF-8" }, ["-sh", "d"]],
 ];
 
 test("output matches /usr/bin/du on ordinary (non-iCloud) trees", async () => {
