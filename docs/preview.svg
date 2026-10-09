@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="860" height="372" viewBox="0 0 860 372" role="img" aria-label="Terminal: du reports 276M for ~/Documents, icdu reports 1.2G because it counts files evicted to iCloud; below, a live table with one line per directory">
+  <style>
+    text { font-family: Menlo, "SF Mono", "DejaVu Sans Mono", monospace; font-size: 16px; fill: #d6deeb; }
+    .dim { fill: #7f8c9d; }
+    .green { fill: #7ee787; }
+    .amber { fill: #e3b341; }
+    .blue { fill: #79c0ff; }
+    .end { text-anchor: end; }
+    .title { font-size: 13px; fill: #7f8c9d; text-anchor: middle; }
+  </style>
+  <rect width="860" height="372" rx="12" fill="#161b22"/>
+  <rect width="860" height="38" rx="12" fill="#1f2630"/>
+  <rect y="26" width="860" height="12" fill="#1f2630"/>
+  <circle cx="22" cy="19" r="6" fill="#ff5f56"/>
+  <circle cx="42" cy="19" r="6" fill="#ffbd2e"/>
+  <circle cx="62" cy="19" r="6" fill="#27c93f"/>
+  <text class="title" x="430" y="24">icdu</text>
+
+  <text class="dim" x="24" y="72">$</text><text x="44" y="72">du -sh ~/Documents</text>
+  <text class="amber end" x="84" y="96">276M</text><text x="108" y="96">/Users/you/Documents</text><text class="dim" x="400" y="96"># evicted iCloud files count as 0</text>
+
+  <text class="dim" x="24" y="132">$</text><text x="44" y="132">icdu -sh ~/Documents</text>
+  <text class="green end" x="84" y="156">1.2G</text><text x="108" y="156">/Users/you/Documents</text><text class="dim" x="400" y="156"># ...as if they were on disk</text>
+
+  <text class="dim" x="24" y="192">$</text><text x="44" y="192">icdu -shc /usr /bin /Library /Applications /opt</text>
+  <text class="green end" x="84" y="216">1.9G</text><text x="108" y="216">/usr</text><text class="dim" x="260" y="216">! 1 unreadable</text>
+  <text class="green end" x="84" y="240">4.1M</text><text x="108" y="240">/bin</text>
+  <text class="blue end" x="84" y="264">|</text><text x="108" y="264">/Library</text><text class="dim" x="260" y="264"># still scanning, the rest does not wait</text>
+  <text class="green end" x="84" y="288">44G</text><text x="108" y="288">/Applications</text>
+  <text class="blue end" x="84" y="312">|</text><text x="108" y="312">/opt</text>
+  <text class="blue end" x="84" y="336">|</text><text x="108" y="336">total</text>
+</svg>

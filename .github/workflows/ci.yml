@@ -1,0 +1,30 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: macos-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        node: [18, 20, 22, 24]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+          cache: npm
+      - run: npm ci
+      - run: npm test
+      - name: Smoke test (--local must equal du)
+        run: |
+          diff <(du -s /usr/bin 2>/dev/null) <(node dist/cli.js --local -s /usr/bin 2>/dev/null)
+          diff <(du -ah /usr/share/man/man1 2>/dev/null) <(node dist/cli.js --local -ah /usr/share/man/man1 2>/dev/null)
+          node dist/cli.js --version

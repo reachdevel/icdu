@@ -1,0 +1,43 @@
+# Publishes to npm when a version tag (v*) is pushed, using npm Trusted Publishing (OIDC): no token is stored.
+# One-time setup on npmjs.com: package icdu -> Settings -> Trusted Publisher -> GitHub Actions,
+# repository reachdevel/icdu, workflow file publish.yml. Needs npm 11.5.1 or newer.
+name: Publish
+
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  publish:
+    runs-on: macos-latest # the tests need macOS
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          registry-url: https://registry.npmjs.org
+      - name: Use a recent npm (Trusted Publishing needs >= 11.5.1)
+        run: npm install -g npm@latest
+      - name: Tag must match package.json
+        run: |
+          version="v$(node -p "require('./package.json').version")"
+          if [ "$GITHUB_REF_NAME" != "$version" ]; then
+            echo "Tag $GITHUB_REF_NAME does not match package.json ($version)"; exit 1
+          fi
+      - run: npm ci
+      - run: npm test
+      - name: Already published?
+        id: published
+        run: |
+          name=$(node -p "require('./package.json').name")
+          version=$(node -p "require('./package.json').version")
+          if [ "$(npm view "$name@$version" version 2>/dev/null)" = "$version" ]; then
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+          fi
+      - name: Publish
+        if: steps.published.outputs.skip != 'true'
+        run: npm publish

@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="640" viewBox="0 0 1280 640">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0d1117"/>
+      <stop offset="1" stop-color="#1b2a41"/>
+    </linearGradient>
+  </defs>
+  <style>
+    text { font-family: Menlo, "SF Mono", "DejaVu Sans Mono", monospace; fill: #d6deeb; font-size: 28px; }
+    .dim { fill: #7f8c9d; }
+    .green { fill: #7ee787; }
+    .amber { fill: #e3b341; }
+    .end { text-anchor: end; }
+    .sans { font-family: "Helvetica Neue", Helvetica, Arial, sans-serif; }
+  </style>
+  <rect width="1280" height="640" fill="url(#bg)"/>
+
+  <text class="sans" x="80" y="190" style="font-size:132px;font-weight:700;fill:#ffffff">icdu</text>
+  <text class="sans" x="84" y="262" style="font-size:42px;fill:#c9d4e3">du for macOS that counts what</text>
+  <text class="sans" x="84" y="316" style="font-size:42px;fill:#c9d4e3">iCloud moved off your disk.</text>
+
+  <rect x="80" y="372" width="372" height="64" rx="12" fill="#0d1117" stroke="#30394a" stroke-width="2"/>
+  <text class="dim" x="108" y="414">$</text><text x="136" y="414">npm i -g icdu</text>
+
+  <rect x="80" y="486" width="1120" height="110" rx="14" fill="#0d1117" stroke="#30394a" stroke-width="2"/>
+  <text class="dim" x="112" y="530">$</text><text x="140" y="530">du -sh ~/Documents</text>
+  <text class="amber end" x="620" y="530">276M</text><text class="dim" x="660" y="530" style="font-size:24px"># evicted files count as 0</text>
+  <text class="dim" x="112" y="574">$</text><text x="140" y="574">icdu -sh ~/Documents</text>
+  <text class="green end" x="620" y="574">1.2G</text><text class="dim" x="660" y="574" style="font-size:24px"># counted as if on disk</text>
+</svg>

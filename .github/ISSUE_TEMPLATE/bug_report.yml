@@ -1,0 +1,25 @@
+name: Bug report
+description: A crash, a hang, a wrong exit code or behavior that differs from the documentation
+labels: [bug]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened?
+      description: The command you ran, what you expected and what you got.
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: icdu version
+      description: Output of `icdu --version`.
+    validations:
+      required: true
+  - type: input
+    id: env
+    attributes:
+      label: macOS and Node.js version
+      placeholder: macOS 26.0, Node 22.11
+    validations:
+      required: true

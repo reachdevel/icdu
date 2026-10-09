@@ -1,0 +1,42 @@
+name: Output differs from du
+description: icdu prints something different from /usr/bin/du (other than the iCloud difference)
+labels: [du-compat]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        `icdu --local` is meant to print exactly what `du` prints. If it doesn't, that is a bug.
+        Without `--local`, icdu is expected to report more than `du` for files evicted to iCloud.
+  - type: input
+    id: command
+    attributes:
+      label: Command
+      placeholder: icdu -shc ~/Documents/*
+    validations:
+      required: true
+  - type: textarea
+    id: du
+    attributes:
+      label: Output of `du` with the same options
+      render: text
+    validations:
+      required: true
+  - type: textarea
+    id: local
+    attributes:
+      label: Output of `icdu --local` with the same options
+      render: text
+    validations:
+      required: true
+  - type: textarea
+    id: icdu
+    attributes:
+      label: Output of `icdu` without `--local` (if different)
+      render: text
+  - type: input
+    id: env
+    attributes:
+      label: icdu version, macOS and Node.js version
+      placeholder: icdu 0.1.0, macOS 26.0, Node 22.11
+    validations:
+      required: true

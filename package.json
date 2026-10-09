@@ -1,0 +1,51 @@
+{
+  "name": "icdu",
+  "version": "0.1.0",
+  "description": "du for macOS that is aware of iCloud: files evicted to iCloud are counted as if they were on disk.",
+  "keywords": [
+    "du",
+    "icloud",
+    "disk-usage",
+    "macos",
+    "cli",
+    "storage",
+    "dataless"
+  ],
+  "license": "MIT",
+  "author": "Levent Kurt <reachdevel@gmail.com>",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/reachdevel/icdu.git"
+  },
+  "homepage": "https://github.com/reachdevel/icdu#readme",
+  "bugs": {
+    "url": "https://github.com/reachdevel/icdu/issues"
+  },
+  "type": "commonjs",
+  "bin": {
+    "icdu": "dist/cli.js"
+  },
+  "files": [
+    "dist/*.js",
+    "docs/preview.svg",
+    "CHANGELOG.md"
+  ],
+  "os": [
+    "darwin"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "build": "rm -rf dist && tsc",
+    "test": "npm run build && node --test dist/test/*.test.js",
+    "prepublishOnly": "npm test"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.4",
+    "typescript": "^7.0.2"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}
