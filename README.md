@@ -38,7 +38,8 @@ Use it like `du`:
 ```sh
 icdu -shc ~/Documents ~/Desktop ~/Library/Mobile\ Documents
 icdu -d1 -h ~/Library
-icdu -a ~/Downloads | sort -n | tail
+icdu -Sh -d1 ~/Library          # biggest folders first
+icdu -shcS ~/Documents ~/Desktop # one line per folder, biggest first
 ```
 
 Like `du`, `-h` and `--si` print the decimal separator of your locale (`4,1M` with a Turkish or German `LC_NUMERIC`).
@@ -49,6 +50,7 @@ Extras that are not in `du`:
 
 | | |
 |---|---|
+| `-S` | Sort the printed lines by size, largest first (like `ls -S`); add `-r` for smallest first (`-Sr`). Equal sizes keep `du`'s order and `-c`'s total stays last. |
 | `--local` | Count only what is stored on this Mac, exactly like `du`. Also `ICDU_LOCAL=1`. |
 | `--plain` | No live table, no progress display. Also `ICDU_PLAIN=1`, or when `CI` is set. |
 | `--help`, `--version` | |

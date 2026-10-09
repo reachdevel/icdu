@@ -21,7 +21,14 @@ export interface Live {
   begin(labels: string[]): void;
   /** Settle a row with its final text (no newline), or `null` when `du` prints nothing for it. `note` is a side remark for humans. */
   resolve(row: number, text: string | null, note?: string): void;
-  end(): void;
+  /** All rows are settled. `order` lists the row indexes in the order they should end up on screen (for -S). */
+  end(order?: number[]): void;
+}
+
+/** One output line with the size it was printed for, so -S can sort numerically. */
+interface Line {
+  text: string;
+  blocks: number;
 }
 
 const BLOCK = 512;
@@ -348,19 +355,19 @@ export async function du(paths: string[], options: Options, io: IO, live?: Live)
   };
 
   // ---- phase 2: print in du's order, counting hard links once ----
-  const emit = (node: Node, path: string, level: number, lines: string[]): number => {
+  const emit = (node: Node, path: string, level: number, lines: Line[]): number => {
     const e = node.entry;
     if (!e.isDir) {
       if (e.nlink > 1 && !options.allLinks && repeatedLink(e)) return 0;
       const blocks = entryBlocks(e, isDataless(e, node.flags));
-      if (options.all || level === 0) lines.push(`${fmt(blocks)}\t${path}`);
+      if (options.all || level === 0) lines.push({ text: `${fmt(blocks)}\t${path}`, blocks });
       return blocks;
     }
     if (node.fail === "cycle") throw new CycleAbort();
     if (node.fail === "unreadable") return 0;
     let total = entryBlocks(e, false);
     for (const kid of node.kids ?? []) total += emit(kid, `${path}/${kid.name}`, level + 1, lines);
-    if (level <= options.depth && showDir(total)) lines.push(`${fmt(total)}\t${path}`);
+    if (level <= options.depth && showDir(total)) lines.push({ text: `${fmt(total)}\t${path}`, blocks: total });
     return total;
   };
 
@@ -376,21 +383,42 @@ export async function du(paths: string[], options: Options, io: IO, live?: Live)
     return notes.length ? notes.join("  ") : undefined;
   };
 
-  const done: Array<{ total: number } | undefined> = [];
+  const sorting = options.sort !== "none";
+  /** Stable, so lines of equal size keep du's order. */
+  const bySize = (a: { blocks: number }, b: { blocks: number }): number =>
+    options.sort === "asc" ? a.blocks - b.blocks : b.blocks - a.blocks;
+
+  const done: Array<{ total: number; lines: Line[] } | undefined> = [];
+  const held: Line[] = []; // with -S, lines are kept back and printed sorted at the end
   const emitOperand = (i: number, scan: Scanned): void => {
     if (done[i]) return;
-    const lines: string[] = [];
+    const lines: Line[] = [];
     const show = (): void => {
-      if (live) live.resolve(i, lines.length ? lines.join("\n") : null, noteFor(scan));
-      else if (lines.length) io.out(lines.join("\n") + "\n");
+      if (live) live.resolve(i, lines.length ? lines.map((l) => l.text).join("\n") : null, noteFor(scan));
+      else if (sorting) held.push(...lines);
+      else if (lines.length) io.out(lines.map((l) => l.text).join("\n") + "\n");
     };
     let total = 0;
     try {
       total = scan.root ? emit(scan.root, paths[i], 0, lines) : 0;
     } finally {
-      done[i] = { total };
+      done[i] = { total, lines };
       show(); // on a cycle, du has already printed what came before it
     }
+  };
+
+  const flushHeld = (): void => {
+    if (held.length) io.out([...held].sort(bySize).map((l) => l.text).join("\n") + "\n");
+    held.length = 0;
+  };
+
+  /** Final on-screen order of the live rows: settled rows by size, then hidden ones, with the total row last. */
+  const liveOrder = (): number[] | undefined => {
+    if (!sorting) return undefined;
+    const rowsWithLine = paths.map((_, i) => ({ row: i, blocks: done[i]?.lines[0]?.blocks, has: Boolean(done[i]?.lines.length) }));
+    const shown = rowsWithLine.filter((r) => r.has).sort((a, b) => bySize({ blocks: a.blocks ?? 0 }, { blocks: b.blocks ?? 0 }));
+    const hidden = rowsWithLine.filter((r) => !r.has);
+    return [...shown, ...hidden].map((r) => r.row).concat(options.total ? [paths.length] : []);
   };
 
   // An operand with no multiply-linked files cannot be affected by earlier operands, so a live table may show it at once.
@@ -405,10 +433,12 @@ export async function du(paths: string[], options: Options, io: IO, live?: Live)
     if (!(err instanceof CycleAbort)) throw err;
     // like du, a symlink cycle ends the whole run: nothing after it is printed, not even the total
     for (let row = 0; row < rows; row++) if (!done[row]) live?.resolve(row, null);
-    live?.end();
+    flushHeld();
+    live?.end(liveOrder());
     return status;
   }
 
+  flushHeld();
   if (options.total) {
     const line = `${fmt(done.reduce((sum, d) => sum + (d?.total ?? 0), 0))}\ttotal`;
     if (live) {
@@ -416,7 +446,7 @@ export async function du(paths: string[], options: Options, io: IO, live?: Live)
       live.resolve(paths.length, line, unreadable ? `${WARN} ${unreadable} unreadable` : undefined);
     } else io.out(line + "\n");
   }
-  live?.end();
+  live?.end(liveOrder());
   return status;
 }
 

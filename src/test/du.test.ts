@@ -230,6 +230,11 @@ test("--plain and --local, from flags and environment", () => {
   assert.equal(options([], { ICDU_LOCAL: "1" }).local, true);
   assert.equal(options([], { ICDU_LOCAL: "" }).local, false);
   assert.equal(parseArgs(["--bogus"]).kind, "usage");
+  const sort = (args: string[]) => {
+    const parsed = parseArgs(args, {});
+    return parsed.kind === "run" ? parsed.options.sort : parsed.kind;
+  };
+  assert.deepEqual([sort(["-S"]), sort(["-Sr"]), sort(["-rS"]), sort(["-r"]), sort([])], ["desc", "asc", "asc", "none", "none"]);
 });
 
 test("--help and --version", () => {
@@ -419,6 +424,69 @@ test("read errors below an operand go to warn (when provided), errors on the ope
   } finally {
     process.chdir(cwdBefore);
     chmodSync(join(root, "locked"), 0o755);
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
+// -S sorts the lines by size, largest first (-r: smallest first); equal sizes keep du's order and the total stays last.
+test("-S sorts like `du | sort` would", async () => {
+  const root = fixture();
+  const cases = [
+    ["-d1", "d"],
+    ["-a", "d"],
+    ["-d1", "-c", "d", "a"],
+    ["-sc", "a", "c", "top", "big", "d"],
+    ["-s", "d", "top", "big", "a", "c", "empty"],
+  ];
+  try {
+    for (const args of cases) {
+      const real = realDu(args, root).out.split("\n").filter(Boolean);
+      const size = (line: string) => Number(line.split("\t")[0]);
+      const body = real.filter((l) => !l.endsWith("\ttotal"));
+      const total = real.filter((l) => l.endsWith("\ttotal"));
+      const desc = [...body].sort((a, b) => size(b) - size(a)).concat(total);
+      const asc = [...body].sort((a, b) => size(a) - size(b)).concat(total);
+      for (const [flags, expected] of [["S", desc], ["Sr", asc], ["rS", asc]] as const) {
+        const mine = await icdu([`-${flags}`, ...args], root);
+        assert.equal(mine.out, expected.join("\n") + "\n", `-${flags} ${args.join(" ")}`);
+      }
+      // -h prints different text but must keep the same order
+      const humanOrder = (await icdu(["-Sh", ...args], root)).out.split("\n").filter(Boolean).map((l) => l.split("\t")[1]);
+      assert.deepEqual(humanOrder, desc.map((l) => l.split("\t")[1]), `-Sh ${args.join(" ")}`);
+      // without -S nothing changes, and -r alone stays a no-op
+      assert.equal((await icdu(["-r", ...args], root)).out, real.join("\n") + "\n");
+    }
+  } finally {
+    chmodSync(join(root, "locked"), 0o755);
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test("-S reorders the live table rows, total last", async () => {
+  const root = fixture();
+  const cwdBefore = process.cwd();
+  process.chdir(root);
+  try {
+    for (const [args, expected] of [
+      [["-sS", "top", "big", "a", "empty"], ["big", "a", "top", "empty"]],
+      [["-sSr", "top", "big", "a", "empty"], ["empty", "top", "a", "big"]],
+      [["-scS", "top", "big", "a"], ["big", "a", "top", "total"]],
+    ] as const) {
+      const parsed = parseArgs([...args], {});
+      assert.equal(parsed.kind, "run");
+      if (parsed.kind !== "run") continue;
+      const labels: string[] = [];
+      let order: number[] | undefined;
+      const live = {
+        begin: (l: string[]) => void labels.push(...l),
+        resolve: () => {},
+        end: (o?: number[]) => void (order = o),
+      };
+      await du(parsed.paths, parsed.options, { out: () => {}, err: () => {} }, live);
+      assert.deepEqual(order?.map((i) => labels[i]), [...expected], args.join(" "));
+    }
+  } finally {
+    process.chdir(cwdBefore);
     rmSync(root, { recursive: true, force: true });
   }
 });

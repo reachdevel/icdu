@@ -25,6 +25,8 @@ export interface Options {
   nodump: boolean;
   /** -I: ignore entries whose name matches. */
   ignore: Array<(name: string) => boolean>;
+  /** -S: sort the printed lines by size ("desc" = largest first; with -r, "asc"). */
+  sort: "none" | "desc" | "asc";
   /** Decimal separator for -h / --si, from the locale like du. */
   decimalPoint: string;
   /** --local: count only what is stored on this Mac, exactly like du (evicted iCloud files count as nothing). */
@@ -59,10 +61,13 @@ export function parseArgs(argv: string[], env: NodeJS.ProcessEnv = process.env):
     xdev: false,
     nodump: false,
     ignore: [],
+    sort: "none",
     decimalPoint: ".",
     local: enabled(env.ICDU_LOCAL),
     plain: enabled(env.ICDU_PLAIN) || enabled(env.CI),
   };
+  let sortFlag = false;
+  let reverseFlag = false;
   let sFlag = false;
   let dFlag = false;
   let bytesPerBlock: number | undefined;
@@ -123,12 +128,14 @@ export function parseArgs(argv: string[], env: NodeJS.ProcessEnv = process.env):
         case "l": options.allLinks = true; break;
         case "x": options.xdev = true; break;
         case "n": options.nodump = true; break;
-        case "r": break;
+        case "S": sortFlag = true; break;
+        case "r": reverseFlag = true; break; // a no-op in du; reverses -S here
         default: return { kind: "usage" };
       }
     }
   }
   if ([options.all, sFlag, dFlag].filter(Boolean).length > 1) return { kind: "usage" };
+  if (sortFlag) options.sort = reverseFlag ? "asc" : "desc";
   if (options.unit === "human" || options.unit === "si") options.decimalPoint = decimalPoint(env);
   if (bytesPerBlock !== undefined) {
     options.blockSize = options.apparent ? bytesPerBlock : Math.ceil(bytesPerBlock / 512) * 512;

@@ -1,5 +1,5 @@
 export const USAGE =
-  "usage: icdu [-Aclnx] [-H | -L | -P] [-g | -h | -k | -m | --si] [-a | -s | -d depth]\n" +
+  "usage: icdu [-AclnSx] [-H | -L | -P] [-g | -h | -k | -m | --si] [-a | -s | -d depth]\n" +
   "            [-B blocksize] [-I mask] [-t threshold] [--local] [--plain] [file ...]\n";
 
 export const HELP = `icdu - du for macOS that counts files evicted to iCloud as if they were on disk
@@ -20,9 +20,10 @@ Options are those of macOS du(1):
   -s            an entry for each operand only
   -t threshold  only directories above (or, if negative, below) threshold
   -x            do not cross mount points
-  -r            accepted and ignored
+  -r            accepted and ignored (reverses -S)
 
 Extras:
+  -S            sort the lines by size, largest first; with -r, smallest first
   --local       count only what is stored on this Mac, exactly like du
                 (also ICDU_LOCAL=1)
   --plain       no live table or progress display (also ICDU_PLAIN=1, or CI set)

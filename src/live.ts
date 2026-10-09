@@ -55,7 +55,8 @@ export class LiveTable implements Live {
     this.draw();
   }
 
-  end(): void {
+  end(order?: number[]): void {
+    if (order) this.rows = order.map((i) => this.rows[i]);
     this.stopTimer();
     this.draw();
     this.out.write(SHOW_CURSOR);
