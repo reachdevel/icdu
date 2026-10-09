@@ -487,6 +487,7 @@ test("-S reorders the live table rows, total last", async () => {
     }
   } finally {
     process.chdir(cwdBefore);
+    chmodSync(join(root, "locked"), 0o755);
     rmSync(root, { recursive: true, force: true });
   }
 });
